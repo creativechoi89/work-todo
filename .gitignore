@@ -18,3 +18,4 @@
 *.suo
 .vs/
 /dist/
+/outputs/

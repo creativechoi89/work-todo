@@ -59,19 +59,37 @@ namespace WorkTodo {
   readonly TextBox preview=new TextBox();
   readonly TextBox search=new TextBox();
   readonly Label count=new Label();
+  readonly MonthCalendar calendar=new MonthCalendar();
+  readonly CheckBox dateFilter=new CheckBox();
+  readonly Label calendarSummary=new Label();
   readonly ToolStripStatusLabel status=new ToolStripStatusLabel();
   Button add,edit,done,delete;
   bool refreshing; bool uiReady;
   public MainWindow(DataStore dataStore, bool demo) {
-   store=dataStore;Text="할일관리 v0.2.0"+(demo?" · 미리보기 (예시 데이터)":"");
+   store=dataStore;Text="할일관리 v0.3.0"+(demo?" · 미리보기 (예시 데이터)":"");
    Font=new Font("Malgun Gothic",10);ForeColor=Theme.Ink;BackColor=Color.FromArgb(243,246,249);
-   ClientSize=new Size(1100,740);MinimumSize=new Size(860,600);StartPosition=FormStartPosition.CenterScreen;
+   ClientSize=new Size(1180,860);MinimumSize=new Size(1000,760);StartPosition=FormStartPosition.CenterScreen;
    var layout=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=7,Padding=new Padding(24,16,24,12)};
-   foreach(float h in new float[]{72,44,44,38,30})layout.RowStyles.Add(new RowStyle(SizeType.Absolute,h));
+   foreach(float h in new float[]{220,44,44,38,30})layout.RowStyles.Add(new RowStyle(SizeType.Absolute,h));
    layout.RowStyles.Add(new RowStyle(SizeType.Percent,100));layout.RowStyles.Add(new RowStyle(SizeType.Absolute,28));
    var header=new Panel{Dock=DockStyle.Fill};
    header.Controls.Add(new Label{Text="업무를 한눈에, 기록은 차곡차곡",Font=new Font(Font.FontFamily,20,FontStyle.Bold),AutoSize=true,Location=new Point(0,0)});
    header.Controls.Add(new Label{Text=DateTime.Now.ToString("yyyy년 M월 d일 dddd")+"  ·  이 PC에 저장  ·  인터넷 연결 불필요",AutoSize=true,ForeColor=Color.FromArgb(95,113,132),Location=new Point(2,42)});
+   calendar.MaxSelectionCount=1;calendar.CalendarDimensions=new Size(1,1);calendar.FirstDayOfWeek=Day.Monday;
+   calendar.ShowToday=true;calendar.AccessibleName="업무 예정일 달력";calendar.Name="taskCalendar";
+   calendar.Font=new Font(Font.FontFamily,9);calendar.MinimumSize=new Size(250,180);calendar.Size=new Size(250,180);calendar.Anchor=AnchorStyles.Top|AnchorStyles.Right;
+   header.Controls.Add(calendar);
+   var legend=new Label{Text="굵은 날짜: 예정일이 있는 업무 (완료 포함)",Height=38,ForeColor=Color.FromArgb(95,113,132),Font=new Font(Font.FontFamily,9),Anchor=AnchorStyles.Top|AnchorStyles.Right};
+   header.Controls.Add(legend);
+   header.Resize+=delegate{calendar.Location=new Point(header.ClientSize.Width-calendar.Width,0);legend.Width=calendar.Width;legend.Location=new Point(header.ClientSize.Width-calendar.Width,calendar.Bottom+5);};
+   calendarSummary.Location=new Point(2,80);calendarSummary.AutoSize=true;calendarSummary.AccessibleName="선택 날짜 업무 요약";
+   header.Controls.Add(calendarSummary);
+   dateFilter.Text="선택 날짜 업무만 보기 (예정일 기준)";dateFilter.AutoSize=true;dateFilter.Location=new Point(2,114);dateFilter.AccessibleName="선택 날짜 업무만 보기";
+   dateFilter.CheckedChanged+=delegate{if(uiReady)RefreshItems(null);};header.Controls.Add(dateFilter);
+   var allDates=Theme.Button("전체 날짜 보기",false);allDates.Location=new Point(2,154);allDates.Click+=delegate{dateFilter.Checked=false;};header.Controls.Add(allDates);
+   var today=Theme.Button("오늘 업무 보기",false);today.Location=new Point(160,154);today.Click+=delegate{calendar.SetDate(DateTime.Today);dateFilter.Checked=true;};header.Controls.Add(today);
+   calendar.DateChanged+=delegate{if(uiReady)RefreshItems(null);};
+   calendar.DateSelected+=delegate{if(uiReady&&!IsNotes)dateFilter.Checked=true;};
    var menu=new FlowLayoutPanel{Dock=DockStyle.Fill,Margin=new Padding(0)};
    var backup=Theme.Button("백업 저장",false);backup.Click+=delegate{ExportBackup();};
    var restore=Theme.Button("백업 복원",false);restore.Click+=delegate{RestoreBackup();};
@@ -112,6 +130,15 @@ namespace WorkTodo {
   string CurrentCategory {get{return Model.Categories[Math.Min(tabs.SelectedIndex,2)];}}
   static string DisplayDate(string timestamp) {DateTimeOffset d;return DateTimeOffset.TryParse(timestamp,out d)?d.LocalDateTime.ToString("yyyy-MM-dd HH:mm"):"";}
   bool Matches(params string[] fields){string query=search.Text.Trim();return query.Length==0||fields.Any(s=>(s??"").IndexOf(query,StringComparison.CurrentCultureIgnoreCase)>=0);}
+  string SelectedDate {get{return calendar.SelectionStart.ToString("yyyy-MM-dd");}}
+  void RefreshCalendar() {
+   var marked=store.LoadError==null?TaskDates.MarkedDates(store.Data.Tasks):new DateTime[0];
+   // Recreating the native calendar during DateChanged would swallow DateSelected.
+   if(!calendar.BoldedDates.SequenceEqual(marked)){calendar.BoldedDates=marked;calendar.UpdateBoldedDates();}
+   var tasks=store.Data.Tasks.Where(t=>TaskDates.Matches(t,calendar.SelectionStart)).ToList();
+   calendarSummary.Text=store.LoadError==null?String.Format("{0}  ·  예정 업무 {1}개 (미완료 {2} · 완료 {3})",SelectedDate,tasks.Count,tasks.Count(t=>!t.Done),tasks.Count(t=>t.Done)):"데이터 보호 모드 · 날짜별 업무를 읽을 수 없습니다.";
+   dateFilter.Enabled=!IsNotes&&store.LoadError==null;
+  }
   List<string> SelectedIds(){return list.SelectedItems.Cast<ListViewItem>().Select(i=>(string)i.Tag).ToList();}
   void RefreshItems(string selectId) {
    refreshing=true;list.BeginUpdate();list.Items.Clear();
@@ -122,7 +149,7 @@ namespace WorkTodo {
      }
     } else {
      bool completed=tabs.SelectedIndex==3;
-     foreach(var t in store.Data.Tasks.Where(t=>t.Done==completed&&(completed||t.Category==CurrentCategory)&&Matches(t.Title,t.Body,t.Category)).OrderByDescending(t=>completed?t.CompletedAt:t.UpdatedAt)) {
+     foreach(var t in store.Data.Tasks.Where(t=>t.Done==completed&&(completed||t.Category==CurrentCategory)&&(!dateFilter.Checked||TaskDates.Matches(t,calendar.SelectionStart))&&Matches(t.Title,t.Body,t.Category)).OrderByDescending(t=>completed?t.CompletedAt:t.UpdatedAt)) {
       var row=new ListViewItem(new[]{t.Title,t.Category,t.DueDate,DisplayDate(t.UpdatedAt),DisplayDate(t.CompletedAt)});row.Tag=t.Id;list.Items.Add(row);if(t.Id==selectId)row.Selected=true;
      }
     }
@@ -132,6 +159,8 @@ namespace WorkTodo {
    done.Visible=!IsNotes;done.Text=tabs.SelectedIndex==3?"완료 취소":"선택 완료";
    bool healthy=store.LoadError==null;add.Enabled=healthy;edit.Enabled=healthy;delete.Enabled=healthy;done.Enabled=healthy;
    count.Text=healthy?String.Format("{0}  {1}개  |  미완료 {2}개 · 완료 {3}개 · 참고사항 {4}개",tabs.SelectedTab.Text,list.Items.Count,store.Data.Tasks.Count(t=>!t.Done),store.Data.Tasks.Count(t=>t.Done),store.Data.Notes.Count):"데이터 보호 모드 · 원본을 덮어쓰지 않습니다. 백업 복원으로 복구할 수 있습니다.";
+   if(healthy)count.Text+=IsNotes?"  ·  참고사항은 전체 날짜":dateFilter.Checked?"  ·  예정일 "+SelectedDate+"만 표시":"  ·  전체 날짜 (예정일 없는 업무 포함)";
+   RefreshCalendar();
    ShowPreview();
   }
   void ShowPreview() {
@@ -148,7 +177,7 @@ namespace WorkTodo {
    TaskItem task=null;NoteItem note=null;
    if(!create){if(IsNotes)note=store.Data.Notes.First(x=>x.Id==ids[0]);else task=store.Data.Tasks.First(x=>x.Id==ids[0]);}
    string group=IsNotes?(note==null?tabs.SelectedTab.Text:(note.Kind=="equipment"?"설비 참고사항":"업무 참고사항")):(task==null?CurrentCategory:task.Category);
-   using(var dialog=new EditDialog(IsNotes,create?(IsNotes?"참고사항 추가":"업무 추가"):"항목 수정",task!=null?task.Title:note!=null?note.Title:"",task!=null?task.Body:note!=null?note.Body:"",group,task!=null?task.DueDate:"",note!=null?note.Tag:"")) {
+   using(var dialog=new EditDialog(IsNotes,create?(IsNotes?"참고사항 추가":"업무 추가"):"항목 수정",task!=null?task.Title:note!=null?note.Title:"",task!=null?task.Body:note!=null?note.Body:"",group,task!=null?task.DueDate:(!IsNotes&&dateFilter.Checked?SelectedDate:""),note!=null?note.Tag:"")) {
     while(dialog.ShowDialog(this)==DialogResult.OK) {
      string title=dialog.ItemTitle,body=dialog.ItemBody,category=dialog.ItemCategory;
      bool success;

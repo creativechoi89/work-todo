@@ -3,8 +3,8 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 [assembly: AssemblyTitle("할일관리")]
-[assembly: AssemblyVersion("0.2.0.0")]
-[assembly: AssemblyFileVersion("0.2.0.0")]
+[assembly: AssemblyVersion("0.3.0.0")]
+[assembly: AssemblyFileVersion("0.3.0.0")]
 namespace WorkTodo {
  static class Program {
   [STAThread] static int Main(string[] args) {
@@ -32,3 +32,4 @@ namespace WorkTodo {
   }
  }
 }
+

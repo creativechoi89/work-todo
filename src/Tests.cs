@@ -93,6 +93,29 @@ namespace WorkTodo {
     using(var edit=new EditDialog(false,"test","A","B","예정사항","2026-10-24","")){Check(edit.ItemTitle=="A"&&edit.ItemCategory=="예정사항"&&edit.ItemDue=="2026-10-24","Task editor");}
     using(var edit=new EditDialog(true,"test","N","B","설비 참고사항","","A")){Check(edit.ItemTag=="A","Note editor");}
    });
+   Run("Calendar dates include completed work and deduplicate while ignoring undated work",delegate{
+    var a=Model.NewTask("A","","금일사항","2026-10-23");var b=Model.NewTask("B","","예정사항","2026-10-23");
+    var c=Model.NewTask("C","","진행사항","");var d=Model.NewTask("D","","금일사항","2026-11-01");
+    var data=new AppData();data.Tasks.AddRange(new[]{a,b,c,d});Model.SetDone(data,new[]{b.Id},true);
+    var marked=TaskDates.MarkedDates(data.Tasks);Check(marked.SequenceEqual(new[]{new DateTime(2026,10,23),new DateTime(2026,11,1)}),"Distinct actual due dates");
+    Check(TaskDates.Matches(a,new DateTime(2026,10,23))&&!TaskDates.Matches(c,new DateTime(2026,10,23)),"Due date matching only");
+   });
+   Run("Calendar filter updates real lists, completed view, notes and reset without changing saved data",delegate{
+    using(var store=new DataStore(Path.Combine(root,"calendar-ui"),null)){
+     store.Change(data=>{data.Tasks.Add(Model.NewTask("selected","","금일사항","2026-10-23"));data.Tasks.Add(Model.NewTask("other","","금일사항","2026-11-01"));data.Tasks.Add(Model.NewTask("undated","","금일사항",""));var t=Model.NewTask("done","","예정사항","2026-10-23");data.Tasks.Add(t);Model.SetDone(data,new[]{t.Id},true);data.Notes.Add(Model.NewNote("note","","equipment",""));});
+     string before=File.ReadAllText(store.DataPath);
+     using(var form=new MainWindow(store,false)){
+      form.Show();Application.DoEvents();var controls=Descendants(form).ToList();var calendar=controls.OfType<MonthCalendar>().Single();var filter=controls.OfType<CheckBox>().Single();var list=controls.OfType<ListView>().Single();var tabs=controls.OfType<TabControl>().Single();
+      Check(!filter.Checked&&list.Items.Count==3,"Start with all dates including undated");var calendarHandle=calendar.Handle;calendar.SetDate(new DateTime(2026,10,23));Check(calendar.Handle==calendarHandle,"Date selection must not recreate native calendar");filter.Checked=true;Application.DoEvents();Check(list.Items.Count==1&&list.Items[0].Text=="selected","Date filter");
+      tabs.SelectedIndex=3;Application.DoEvents();Check(list.Items.Count==1&&list.Items[0].Text=="done","Completed due date filter");
+      tabs.SelectedIndex=4;Application.DoEvents();Check(list.Items.Count==1&&!filter.Enabled,"Notes unaffected");
+      tabs.SelectedIndex=0;calendar.SetDate(new DateTime(2026,11,1));Application.DoEvents();Check(list.Items.Count==1&&list.Items[0].Text=="other","Date switch");
+      controls.OfType<Button>().Single(b=>b.Text=="전체 날짜 보기").PerformClick();Check(list.Items.Count==3&&!filter.Checked,"Reset includes undated");
+      Check(calendar.BoldedDates.Length==2,"Calendar marked dates");form.Size=form.MinimumSize;Application.DoEvents();Check(calendar.Right<=calendar.Parent.ClientSize.Width&&calendar.Left>500,"Calendar fits minimum width");form.Close();
+     }
+     Check(File.ReadAllText(store.DataPath)==before,"Date browsing never mutates persisted records");
+    }
+   });
    Results.Add(String.Format("TOTAL {0}; PASS {1}; FAIL {2}",Results.Count,Results.Count-failed,failed));
    Results.Add("Actual mouse and keyboard testing and target intranet verification are separate checks.");
    File.WriteAllLines(report,Results,new UTF8Encoding(false));return failed==0?0:1;
