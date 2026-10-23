@@ -18,5 +18,9 @@
 
 ## 배포
 - https://github.com/creativechoi89/work-todo
-- v0.3.0 소스 및 실행/소스 ZIP 게시 준비 중. 원격 확인 전 업로드 완료로 간주하지 않는다.
+- v0.3.0 소스 및 실행/소스 ZIP 공개 게시 완료: https://github.com/creativechoi89/work-todo/releases/tag/v0.3.0
+- 소스 커밋: 946c6285cf64990518b72faa06bb3215935d4872
+- 실행 ZIP 30908바이트, 소스 ZIP 28781바이트. 원격 첨부 상태/크기 및 로컬 SHA-256 일치 확인.
+- ZIP 내부 파일 해시, 사용자 JSON 미포함, 소스 ZIP 내용과 로컬 소스 일치 및 추출 exe 자동 검사 16개 통과.
+- 이 게시 후 상태 기록을 제외한 릴리스 소스/ZIP은 위 커밋의 스냅샷이다.
 - 사용자 data, 백업, 실제 업무 기록은 포함하지 않는다.
