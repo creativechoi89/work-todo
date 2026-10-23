@@ -1,30 +1,23 @@
-# 할일 프로젝트
-사내망 Windows PC에서 오프라인으로 사용하는 독립 창 업무 관리 프로그램.
+# 할일관리
+사내망 Windows PC에서 인터넷 없이 사용하는 독립 실행형 업무 관리 프로그램.
 
-- 개발 기준: AGENTS.md
-- 구현/검증 상태 및 남은 작업: STATUS.md
-- 요구사항 변경 기록: CHANGELOG.md
-- 현재 예제 소스: TodoApp.cs
-- 현재 실행 파일: 할일관리.exe (로컬 빌드 결과)
-- 실행 및 기존 검사 설명: 사용안내.md
+## 바로 다운로드
+- [실행용 ZIP](https://github.com/creativechoi89/work-todo/releases/download/v0.2.0/work-todo-windows.zip)
+- [소스 보존용 ZIP](https://github.com/creativechoi89/work-todo/releases/download/v0.2.0/work-todo-source.zip)
 
-## 다시 빌드
-PowerShell에서 프로젝트 폴더로 이동한 뒤:
-```powershell
-.\build.ps1
-```
-실행 중인 프로그램이 있다면 닫고 빌드한다. 현재는 Windows 내장 .NET Framework C# 컴파일러를 사용한다.
-대상 PC에서 프로그램을 실행하는 데 이 빌드 스크립트나 컴파일러는 필요하지 않다.
+새 폴더에 압축을 풀고 할일관리.exe를 실행합니다. Windows 및 .NET Framework 4.x가 필요합니다. 대상 사내망 PC 호환성은 미확인입니다.
 
-## 보존
-소스와 문서는 전용 공개 GitHub 저장소에 보존한다. 실제 업무 데이터와 참고사항은 업로드하지 않는다.
-저장소가 정해지고 원격 파일과 커밋을 확인하기 전까지 원격 백업은 미완료다.
-현재 HTML/JavaScript 파일들은 초기 웹 예제 기록이며 Windows 앱 기능의 기준은 TodoApp.cs다.
+## 기능
+- 업무 3개 분류, 완료 목록과 완료 취소, 여러 업무 선택 처리
+- 업무 제목·상세내용·분류·선택 예정일 편집
+- 설비 참고사항 / 업무 참고사항 별도 작성·편집 및 검색
+- 로컬 자동 저장, 저장 전 백업, JSON 백업/복원
+- 이전 v0.1.0 데이터 가져오기, 같은 데이터 폴더 동시 실행 차단
 
+사용 방법은 사용안내.md, 개발 기준은 AGENTS.md, 검증 상태는 STATUS.md를 확인하세요.
 
-## ZIP 바로 다운로드
-- 실행용 ZIP: https://github.com/creativechoi89/work-todo/releases/download/v0.1.0/work-todo-windows.zip
-- 소스 보존 ZIP: https://github.com/creativechoi89/work-todo/releases/download/v0.1.0/work-todo-source.zip
-
-실행용 ZIP을 별도 폴더에 압축 해제하고 할일관리.exe를 실행한다. 현재 버전은 단일 목록 예제이며 금일/진행/예정 분류와 참고사항 화면은 아직 구현되지 않았다. 사내망 PC 호환성은 미확인이다.
-앞으로도 업로드 결과는 릴리스 첨부 ZIP과 직접 다운로드 링크로 제공한다.
+## 개발
+소스는 src/에 있습니다. Windows PowerShell에서 프로젝트 폴더의 build.ps1을 실행하면 .NET Framework C# 컴파일러로 빌드합니다. 실행 중인 프로그램을 닫고 빌드하세요.
+자동 검사: 할일관리.exe --self-test (test-results.txt에 결과 기록, 임시 폴더의 가상 데이터 사용).
+미리보기: 할일관리.exe --preview (별도 임시 폴더에 예시 업무와 참고사항 생성).
+사용자 데이터 data/와 이전 할일데이터.json은 저장소/배포본에서 제외합니다.
