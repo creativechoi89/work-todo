@@ -19,7 +19,11 @@
 
 ## 배포 상태
 - 저장소: https://github.com/creativechoi89/work-todo
-- v0.2.0 소스 및 실행용/소스용 ZIP 게시 준비 중. 게시 후 원격 첨부와 해시를 확인해야 한다.
+- v0.2.0 소스와 실행용/소스용 ZIP 공개 게시 완료.
+- 릴리스: https://github.com/creativechoi89/work-todo/releases/tag/v0.2.0
+- 소스 커밋: 0b499e2b729737ae5e45a120be8879f4599f0b3a
+- 실행용 ZIP 27550바이트, 소스용 ZIP 26109바이트. 두 첨부의 상태/크기 및 SHA-256과 로컬 원본 일치 확인.
+- 이 게시 후 상태 기록을 제외한 릴리스 소스와 ZIP은 위 커밋의 스냅샷이다.
 - 사용자 데이터 및 테스트로 생성한 JSON은 업로드하지 않는다.
 
 ## 다음 작업
