@@ -33,3 +33,10 @@
 
 
 
+
+## ZIP 릴리스 보존 (2026-10-23)
+- v0.1.0 공개 릴리스 게시 완료: https://github.com/creativechoi89/work-todo/releases/tag/v0.1.0
+- 실행용 work-todo-windows.zip: 10095바이트, 소스용 work-todo-source.zip: 18351바이트.
+- GitHub 첨부 상태 uploaded 및 크기를 확인했다. 로컬 ZIP과 원격 SHA-256도 일치한다.
+- 릴리스 태그의 소스와 ZIP은 ad250551f4566c9c1685636e8d5c1d57149cc659 시점이다. 이 상태 기록은 게시 후 검증 이력이다.
+- 현재 예제 실행 파일을 패키지화했으며 새 업무 기능 구현이나 사내망 검증을 완료한 것은 아니다.
