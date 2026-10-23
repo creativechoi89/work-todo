@@ -21,3 +21,10 @@ PowerShell에서 프로젝트 폴더로 이동한 뒤:
 저장소가 정해지고 원격 파일과 커밋을 확인하기 전까지 원격 백업은 미완료다.
 현재 HTML/JavaScript 파일들은 초기 웹 예제 기록이며 Windows 앱 기능의 기준은 TodoApp.cs다.
 
+
+## ZIP 바로 다운로드
+- 실행용 ZIP: https://github.com/creativechoi89/work-todo/releases/download/v0.1.0/work-todo-windows.zip
+- 소스 보존 ZIP: https://github.com/creativechoi89/work-todo/releases/download/v0.1.0/work-todo-source.zip
+
+실행용 ZIP을 별도 폴더에 압축 해제하고 할일관리.exe를 실행한다. 현재 버전은 단일 목록 예제이며 금일/진행/예정 분류와 참고사항 화면은 아직 구현되지 않았다. 사내망 PC 호환성은 미확인이다.
+앞으로도 업로드 결과는 릴리스 첨부 ZIP과 직접 다운로드 링크로 제공한다.
