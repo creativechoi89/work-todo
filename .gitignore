@@ -1,0 +1,21 @@
+# 사용자 데이터 및 로컬 기록
+/data/
+/backups/
+*.json
+*.json.*
+*.bak
+*.tmp
+*.log
+실행파일-검사결과.txt
+# 빌드 결과 (버전별 릴리스로 별도 관리)
+*.exe
+*.pdb
+*.zip
+/bin/
+/obj/
+# 인증 및 로컬 설정
+.env
+.env.*
+*.user
+*.suo
+.vs/
